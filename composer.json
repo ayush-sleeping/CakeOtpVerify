@@ -9,7 +9,9 @@
         "cakephp/cakephp": "5.2.*",
         "cakephp/migrations": "^4.0.0",
         "cakephp/plugin-installer": "^2.0",
-        "mobiledetect/mobiledetectlib": "^4.8.03"
+        "mobiledetect/mobiledetectlib": "^4.8.03",
+        "sendgrid/sendgrid": "^8.1",
+        "twilio/sdk": "^8.8"
     },
     "require-dev": {
         "cakephp/bake": "^3.0.0",
