@@ -15,15 +15,19 @@
                     <!-- Success Message -->
                     <h2 class="text-success mb-3">Verification Successful!</h2>
                     <p class="lead mb-4">
-                        Your email has been verified successfully.
+                        ✅ Your email and phone number have been verified successfully.
                     </p>
 
                     <!-- Verified Details -->
                     <div class="bg-light rounded p-3 mb-4">
                         <div class="row">
-                            <div class="col-12 mb-2">
-                                <strong>Verified Email:</strong>
+                            <div class="col-12 mb-3">
+                                <strong>📧 Verified Email:</strong>
                                 <div class="text-muted"><?= h($verification->email) ?></div>
+                            </div>
+                            <div class="col-12">
+                                <strong>📱 Verified Phone:</strong>
+                                <div class="text-muted"><?= h($verification->phone) ?></div>
                             </div>
                         </div>
                     </div>
