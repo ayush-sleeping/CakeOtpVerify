@@ -139,6 +139,26 @@ class VerificationsController extends AppController
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /* Step 2: OTP Verification :: */
     // ---------------------------------------------------- ::
     public function verify()

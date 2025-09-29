@@ -1,37 +1,16 @@
-<?php
-
-/**
- * @var \App\View\AppView $this
- * @var \App\Model\Entity\Verification $verification
- */
-?>
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">Registration - Step 1</h3>
-                </div>
                 <div class="card-body">
-                    <form id="registrationForm">
+                    <form id="registrationForm" method="POST" enctype="multipart/form-data" autocomplete="off">
+
                         <!-- Email Field -->
                         <div class="mb-3">
                             <label for="email" class="form-label">Email Address</label>
                             <div class="input-group">
-                                <input type="email"
-                                    class="form-control"
-                                    id="email"
-                                    name="email"
-                                    placeholder="Enter your email"
-                                    required>
-                                <button class="btn btn-outline-primary otp-btn"
-                                    type="button"
-                                    id="emailOtpBtn"
-                                    style="display: none;"
-                                    data-type="email">
-                                    Get OTP
-                                </button>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                                <button class="btn btn-outline-primary otp-btn" type="button" id="emailOtpBtn" style="display: none;" data-type="email">Get OTP</button>
                             </div>
                             <div class="invalid-feedback"></div>
                             <small class="text-muted" id="emailStatus"></small>
@@ -41,36 +20,15 @@
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
                             <div class="input-group">
-                                <input type="tel"
-                                    class="form-control"
-                                    id="phone"
-                                    name="phone"
-                                    placeholder="Enter your phone number"
-                                    required>
-                                <button class="btn btn-outline-primary otp-btn"
-                                    type="button"
-                                    id="phoneOtpBtn"
-                                    style="display: none;"
-                                    data-type="phone">
-                                    Get OTP
-                                </button>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number" required>
+                                <button class="btn btn-outline-primary otp-btn" type="button" id="phoneOtpBtn" style="display: none;" data-type="phone">Get OTP</button>
                             </div>
                             <div class="invalid-feedback"></div>
                             <small class="text-muted" id="phoneStatus"></small>
                         </div>
 
-                        <!-- Progress Indicator -->
-                        <div class="alert alert-info" role="alert">
-                            <small>
-                                <span id="otpProgress">Please request OTP for both email and phone to proceed.</span>
-                            </small>
-                        </div>
-
                         <!-- Proceed Button -->
-                        <button type="button"
-                            class="btn btn-success w-100"
-                            id="proceedBtn"
-                            disabled>
+                        <button type="button" class="btn btn-primary w-100" id="proceedBtn" disabled>
                             Proceed to Verification
                         </button>
                     </form>
@@ -81,203 +39,222 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let emailOtpSent = false;
-        let phoneOtpSent = false;
-        let verificationId = null;
-        let cooldowns = {
-            email: false,
-            phone: false
-        };
+document.addEventListener('DOMContentLoaded', function() {
+    // Global variables
+    let emailOtpSent = false;
+    let phoneOtpSent = false;
+    let verificationId = null;
 
-        // Email validation
-        const emailInput = document.getElementById('email');
-        const emailOtpBtn = document.getElementById('emailOtpBtn');
-        const emailStatus = document.getElementById('emailStatus');
+    // Get DOM elements
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const emailOtpBtn = document.getElementById('emailOtpBtn');
+    const phoneOtpBtn = document.getElementById('phoneOtpBtn');
+    const emailStatus = document.getElementById('emailStatus');
+    const phoneStatus = document.getElementById('phoneStatus');
+    const proceedBtn = document.getElementById('proceedBtn');
 
-        emailInput.addEventListener('input', function() {
-            const isValid = validateEmail(this.value);
-            if (isValid) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-                if (!emailOtpSent) {
-                    emailOtpBtn.style.display = 'block';
-                }
-            } else {
-                this.classList.remove('is-valid');
-                this.classList.add('is-invalid');
-                emailOtpBtn.style.display = 'none';
+    // ==================================================
+    // STEP 1: EMAIL & PHONE VALIDATION + SHOW GET OTP BUTTONS
+    // ==================================================
+
+    // Email validation and show Get OTP button
+    emailInput.addEventListener('input', function() {
+        const email = this.value.trim();
+
+        if (validateEmail(email)) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+            // Show Get OTP button only if OTP not sent yet
+            if (!emailOtpSent) {
+                emailOtpBtn.style.display = 'block';
             }
-        });
-
-        // Phone validation
-        const phoneInput = document.getElementById('phone');
-        const phoneOtpBtn = document.getElementById('phoneOtpBtn');
-        const phoneStatus = document.getElementById('phoneStatus');
-
-        phoneInput.addEventListener('input', function() {
-            const isValid = validatePhone(this.value);
-            if (isValid) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-                if (!phoneOtpSent) {
-                    phoneOtpBtn.style.display = 'block';
-                }
-            } else {
-                this.classList.remove('is-valid');
-                this.classList.add('is-invalid');
-                phoneOtpBtn.style.display = 'none';
-            }
-        });
-
-        // OTP Button Click Handlers
-        document.querySelectorAll('.otp-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const type = this.dataset.type;
-                const value = type === 'email' ? emailInput.value : phoneInput.value;
-
-                if (cooldowns[type]) {
-                    alert('Please wait before requesting another OTP');
-                    return;
-                }
-
-                sendOtp(type, value, this);
-            });
-        });
-
-        // Send OTP Function
-        function sendOtp(type, value, button) {
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
-
-            fetch('/verifications/send-otp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': getCsrfToken()
-                    },
-                    body: JSON.stringify({
-                        type: type,
-                        value: value,
-                        verification_id: verificationId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.verification_id) {
-                            verificationId = data.verification_id;
-                        }
-
-                        // Mark as sent
-                        if (type === 'email') {
-                            emailOtpSent = true;
-                            emailStatus.textContent = '✓ OTP sent to your email';
-                            emailStatus.classList.add('text-success');
-                        } else {
-                            phoneOtpSent = true;
-                            phoneStatus.textContent = '✓ OTP sent to your phone';
-                            phoneStatus.classList.add('text-success');
-                        }
-
-                        // Start cooldown
-                        startCooldown(type, button);
-
-                        // Check if both OTPs sent
-                        checkProceedButton();
-                    } else {
-                        alert(data.message || 'Failed to send OTP');
-                        button.disabled = false;
-                        button.textContent = 'Get OTP';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                    button.disabled = false;
-                    button.textContent = 'Get OTP';
-                });
-        }
-
-        // Cooldown timer
-        function startCooldown(type, button) {
-            cooldowns[type] = true;
-            let seconds = 60;
-
-            const interval = setInterval(() => {
-                seconds--;
-                button.textContent = `Resend in ${seconds}s`;
-
-                if (seconds <= 0) {
-                    clearInterval(interval);
-                    cooldowns[type] = false;
-                    button.disabled = false;
-                    button.textContent = 'Resend OTP';
-                }
-            }, 1000);
-        }
-
-        // Check if both OTPs sent
-        function checkProceedButton() {
-            const proceedBtn = document.getElementById('proceedBtn');
-            const otpProgress = document.getElementById('otpProgress');
-
-            if (emailOtpSent && phoneOtpSent) {
-                proceedBtn.disabled = false;
-                otpProgress.textContent = '✓ Both OTPs sent! You can now proceed to verification.';
-            } else if (emailOtpSent) {
-                otpProgress.textContent = 'Email OTP sent. Please request phone OTP to proceed.';
-            } else if (phoneOtpSent) {
-                otpProgress.textContent = 'Phone OTP sent. Please request email OTP to proceed.';
-            }
-        }
-
-        // Proceed button click
-        document.getElementById('proceedBtn').addEventListener('click', function() {
-            if (emailOtpSent && phoneOtpSent && verificationId) {
-                // Store data in form and submit
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/verifications/register';
-
-                const emailField = document.createElement('input');
-                emailField.type = 'hidden';
-                emailField.name = 'email';
-                emailField.value = emailInput.value;
-                form.appendChild(emailField);
-
-                const phoneField = document.createElement('input');
-                phoneField.type = 'hidden';
-                phoneField.name = 'phone';
-                phoneField.value = phoneInput.value;
-                form.appendChild(phoneField);
-
-                const csrfField = document.createElement('input');
-                csrfField.type = 'hidden';
-                csrfField.name = '_csrfToken';
-                csrfField.value = getCsrfToken();
-                form.appendChild(csrfField);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-
-        // Validation functions
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function validatePhone(phone) {
-            const re = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,5}[-\s\.]?[0-9]{1,5}$/;
-            return re.test(phone);
-        }
-
-        // Get CSRF Token
-        function getCsrfToken() {
-            const token = document.querySelector('meta[name="csrf-token"]');
-            return token ? token.getAttribute('content') : '';
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+            emailOtpBtn.style.display = 'none';
         }
     });
+
+    // Phone validation and show Get OTP button
+    phoneInput.addEventListener('input', function() {
+        const phone = this.value.replace(/\D/g, ''); // Remove non-digits
+
+        if (validatePhone(phone)) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+            // Show Get OTP button only if OTP not sent yet
+            if (!phoneOtpSent) {
+                phoneOtpBtn.style.display = 'block';
+            }
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+            phoneOtpBtn.style.display = 'none';
+        }
+    });
+
+    // Validation helper functions
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function validatePhone(phone) {
+        return /^\d{10}$/.test(phone);
+    }
+
+    // ==================================================
+    // STEP 2: SEND OTP VIA AJAX CALLS TO CONTROLLER
+    // ==================================================
+
+    // Email OTP button click
+    emailOtpBtn.addEventListener('click', function() {
+        const email = emailInput.value.trim();
+        sendOtpToController('email', email, this);
+    });
+
+    // Phone OTP button click
+    phoneOtpBtn.addEventListener('click', function() {
+        const phone = phoneInput.value.replace(/\D/g, '');
+        sendOtpToController('phone', phone, this);
+    });
+
+    // Send OTP to controller via Ajax
+    function sendOtpToController(type, value, button) {
+        // Disable button and show loading
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+
+        // Prepare data for Ajax call
+        const requestData = {
+            type: type,
+            value: value
+        };
+
+        // Add verification_id if exists
+        if (verificationId) {
+            requestData.verification_id = verificationId;
+        }
+
+        // Make Ajax call to controller
+        fetch('/verifications/send-otp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrfToken()
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Store verification ID if provided
+                if (data.verification_id) {
+                    verificationId = data.verification_id;
+                }
+
+                // Update UI based on type
+                if (type === 'email') {
+                    emailOtpSent = true;
+                    emailStatus.textContent = '✓ OTP sent to your email';
+                    emailStatus.className = 'text-success';
+                    button.style.display = 'none'; // Hide button after sending
+                } else if (type === 'phone') {
+                    phoneOtpSent = true;
+                    phoneStatus.textContent = '✓ OTP sent to your phone';
+                    phoneStatus.className = 'text-success';
+                    button.style.display = 'none'; // Hide button after sending
+                }
+
+                // Check if proceed button should be enabled
+                checkProceedButtonStatus();
+
+            } else {
+                // Handle error
+                alert(data.message || 'Failed to send OTP. Please try again.');
+                button.disabled = false;
+                button.textContent = 'Get OTP';
+            }
+        })
+        .catch(error => {
+            console.error('Ajax Error:', error);
+            alert('Network error. Please check your connection and try again.');
+            button.disabled = false;
+            button.textContent = 'Get OTP';
+        });
+    }
+
+    // ==================================================
+    // STEP 3: ENABLE PROCEED BUTTON WHEN BOTH OTP SENT
+    // ==================================================
+
+    // Check if both OTPs are sent and enable Proceed button
+    function checkProceedButtonStatus() {
+        if (emailOtpSent && phoneOtpSent) {
+            proceedBtn.disabled = false;
+            proceedBtn.classList.remove('btn-secondary');
+            proceedBtn.classList.add('btn-success');
+            proceedBtn.textContent = '✓ Proceed to Verification';
+        }
+    }
+
+    // ==================================================
+    // STEP 4: REDIRECT TO VERIFY PAGE ON PROCEED CLICK
+    // ==================================================
+
+    // Proceed button click - redirect to verify page
+    proceedBtn.addEventListener('click', function() {
+        if (emailOtpSent && phoneOtpSent && verificationId) {
+            // Create hidden form to submit data
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/verifications/proceed-to-verify';
+
+            // Add email field
+            const emailField = document.createElement('input');
+            emailField.type = 'hidden';
+            emailField.name = 'email';
+            emailField.value = emailInput.value.trim();
+            form.appendChild(emailField);
+
+            // Add phone field
+            const phoneField = document.createElement('input');
+            phoneField.type = 'hidden';
+            phoneField.name = 'phone';
+            phoneField.value = phoneInput.value.replace(/\D/g, '');
+            form.appendChild(phoneField);
+
+            // Add verification ID
+            const verificationField = document.createElement('input');
+            verificationField.type = 'hidden';
+            verificationField.name = 'verification_id';
+            verificationField.value = verificationId;
+            form.appendChild(verificationField);
+
+            // Add CSRF token
+            const csrfField = document.createElement('input');
+            csrfField.type = 'hidden';
+            csrfField.name = '_csrfToken';
+            csrfField.value = getCsrfToken();
+            form.appendChild(csrfField);
+
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert('Please send both email and phone OTPs first.');
+        }
+    });
+
+    // ==================================================
+    // HELPER FUNCTIONS
+    // ==================================================
+
+    // Get CSRF Token from meta tag
+    function getCsrfToken() {
+        const token = document.querySelector('meta[name="csrf-token"]');
+        return token ? token.getAttribute('content') : '';
+    }
+});
 </script>
