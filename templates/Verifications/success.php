@@ -1,7 +1,7 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card border-success">
+            <div class="card border-success shadow">
                 <div class="card-body text-center py-5">
                     <!-- Success Icon -->
                     <div class="mb-4">
@@ -15,7 +15,7 @@
                     <!-- Success Message -->
                     <h2 class="text-success mb-3">Verification Successful!</h2>
                     <p class="lead mb-4">
-                        Your email and phone number have been verified successfully.
+                        Your email has been verified successfully.
                     </p>
 
                     <!-- Verified Details -->
@@ -25,16 +25,12 @@
                                 <strong>Verified Email:</strong>
                                 <div class="text-muted"><?= h($verification->email) ?></div>
                             </div>
-                            <div class="col-12">
-                                <strong>Verified Phone:</strong>
-                                <div class="text-muted"><?= h($verification->phone) ?></div>
-                            </div>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2">
-                        <a href="/verifications/register" class="btn btn-primary">
+                        <a href="/register" class="btn btn-primary">
                             Start New Verification
                         </a>
                         <a href="/" class="btn btn-outline-secondary">
@@ -53,3 +49,21 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Success animation */
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.rounded-circle.bg-success {
+    animation: scaleIn 0.5s ease-out;
+}
+</style>
