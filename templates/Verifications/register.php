@@ -35,7 +35,7 @@
                                 name="phone"
                                 placeholder="Enter your phone number (e.g., +1234567890)"
                                 required>
-                            <button class="btn btn-outline-success"
+                            <button class="btn btn-outline-primary"
                                 type="button"
                                 id="phoneOtpBtn"
                                 style="display: none;">

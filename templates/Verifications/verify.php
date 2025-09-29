@@ -20,7 +20,7 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold">Email Verification</label>
                             <div class="bg-light p-2 rounded mb-2">
-                                <small class="text-muted">📧 <?= h($email) ?></small>
+                                <small class="text-muted"><?= h($email) ?></small>
                             </div>
                             <input type="text"
                                    class="form-control form-control-lg text-center"
@@ -40,7 +40,7 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold">Phone Verification</label>
                             <div class="bg-light p-2 rounded mb-2">
-                                <small class="text-muted">📱 <?= h($phone) ?></small>
+                                <small class="text-muted"><?= h($phone) ?></small>
                             </div>
                             <input type="text"
                                    class="form-control form-control-lg text-center"
