@@ -5,54 +5,58 @@
                 <div class="card-body p-4">
                     <h3 class="card-title text-center mb-4">Register</h3>
 
-                    <!-- Email Field -->
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
-                        <div class="input-group">
-                            <input type="email"
-                                class="form-control"
-                                id="email"
-                                name="email"
-                                placeholder="Enter your email"
-                                required>
-                            <button class="btn btn-outline-primary"
-                                type="button"
-                                id="emailOtpBtn"
-                                style="display: none;">
-                                Get OTP
-                            </button>
-                        </div>
-                        <small class="text-muted" id="emailStatus"></small>
-                    </div>
+                    <!-- Main Parent Form -->
+                    <form id="mainForm">
 
-                    <!-- Phone Number Field -->
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <div class="input-group">
-                            <input type="tel"
-                                class="form-control"
-                                id="phone"
-                                name="phone"
-                                placeholder="Enter your phone number (e.g., +1234567890)"
-                                required>
-                            <button class="btn btn-outline-primary"
-                                type="button"
-                                id="phoneOtpBtn"
-                                style="display: none;">
-                                Get OTP
-                            </button>
+                        <!-- Email Section (Child Form 1) -->
+                        <div class="email-section mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <input type="email"
+                                    class="form-control"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    required>
+                                <button class="btn btn-outline-primary"
+                                    type="button"
+                                    id="emailOtpBtn"
+                                    style="display: none;">
+                                    Get OTP
+                                </button>
+                            </div>
+                            <small class="text-muted" id="emailStatus"></small>
                         </div>
-                        <small class="text-muted" id="phoneStatus"></small>
-                        <div class="form-text">Include country code (e.g., +1 for US, +91 for India)</div>
-                    </div>
 
-                    <!-- Proceed Button -->
-                    <button type="button"
-                        class="btn btn-secondary w-100"
-                        id="proceedBtn"
-                        disabled>
-                        Proceed to Verification
-                    </button>
+                        <!-- Phone Section (Child Form 2) -->
+                        <div class="phone-section mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <input type="tel"
+                                    class="form-control"
+                                    id="phone"
+                                    name="phone"
+                                    placeholder="Enter your phone number (e.g., +1234567890)"
+                                    required>
+                                <button class="btn btn-outline-primary"
+                                    type="button"
+                                    id="phoneOtpBtn"
+                                    style="display: none;">
+                                    Get OTP
+                                </button>
+                            </div>
+                            <small class="text-muted" id="phoneStatus"></small>
+                            <div class="form-text">Include country code (e.g., +1 for US, +91 for India)</div>
+                        </div>
+
+                        <!-- Proceed Button -->
+                        <button type="submit"
+                            class="btn btn-secondary w-100"
+                            id="proceedBtn"
+                            disabled>
+                            Proceed to Verification
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -66,6 +70,7 @@
         let phoneOtpSent = false;
 
         // DOM elements
+        const mainForm = document.getElementById('mainForm');
         const emailInput = document.getElementById('email');
         const emailOtpBtn = document.getElementById('emailOtpBtn');
         const emailStatus = document.getElementById('emailStatus');
@@ -304,9 +309,11 @@
         }
 
         // ============================================
-        // PROCEED TO VERIFICATION PAGE
+        // PROCEED TO VERIFICATION PAGE (Main Form Submit)
         // ============================================
-        proceedBtn.addEventListener('click', function() {
+        mainForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
             if (!emailOtpSent || !phoneOtpSent) {
                 toastr.error('Please send OTP to both email and phone', '', {
                     showMethod: "slideDown",
