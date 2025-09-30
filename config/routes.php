@@ -12,9 +12,9 @@ return function (RouteBuilder $routes): void {
 
         // Step 1: Registration page
         $builder->connect('/register', ['controller' => 'Verifications', 'action' => 'register']);
-        // Step 2: Send Email OTP (AJAX endpoint)
+        // Step 2a: Send Email OTP (AJAX endpoint)
         $builder->connect('/verifications/send-otp', ['controller' => 'Verifications', 'action' => 'sendOtp'])->setMethods(['POST']);
-        // Step 2b: Send Phone OTP (AJAX endpoint) - NEW
+        // Step 2b: Send Phone OTP (AJAX endpoint)
         $builder->connect('/verifications/send-phone-otp', ['controller' => 'Verifications', 'action' => 'sendPhoneOtp'])->setMethods(['POST']);
         // Step 3: Verify page (enter both OTPs)
         $builder->connect('/verify', ['controller' => 'Verifications', 'action' => 'verify']);

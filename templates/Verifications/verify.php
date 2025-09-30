@@ -84,36 +84,40 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const emailOtpInput = document.getElementById('email_otp');
-    const phoneOtpInput = document.getElementById('phone_otp');
-    const verifyBtn = document.getElementById('verifyBtn');
-    const verifyForm = document.getElementById('verifyOtpForm');
+    // --- DOM Elements ---
+    const emailOtpInput = document.getElementById('email_otp'); // Email OTP input field
+    const phoneOtpInput = document.getElementById('phone_otp'); // Phone OTP input field
+    const verifyBtn = document.getElementById('verifyBtn');      // Verify button
+    const verifyForm = document.getElementById('verifyOtpForm'); // OTP verification form
 
-    // Auto-focus on email OTP input
+    // --- Autofocus on email OTP input when page loads ---
     emailOtpInput.focus();
 
-    // Only allow numbers in OTP inputs
+    // --- Input restrictions: Only allow numbers in OTP fields ---
     emailOtpInput.addEventListener('input', function(e) {
+        // Remove any non-numeric characters
         this.value = this.value.replace(/[^0-9]/g, '');
-        // Auto-focus to phone OTP when email OTP is complete
+        // If 6 digits entered, move focus to phone OTP
         if (this.value.length === 6) {
             phoneOtpInput.focus();
         }
     });
 
     phoneOtpInput.addEventListener('input', function(e) {
+        // Remove any non-numeric characters
         this.value = this.value.replace(/[^0-9]/g, '');
     });
 
-    // Form submission via AJAX
+    // --- AJAX OTP Verification Form Submission ---
     $(document).ready(function() {
         $('#verifyOtpForm').submit(function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission
 
+            // Get OTP values from inputs
             const emailOtp = $('#email_otp').val().trim();
             const phoneOtp = $('#phone_otp').val().trim();
 
-            // Validate both OTPs
+            // --- Validate Email OTP ---
             if (emailOtp.length !== 6 || !/^\d{6}$/.test(emailOtp)) {
                 toastr.error('Please enter a valid 6-digit email OTP', '', {
                     showMethod: "slideDown",
@@ -125,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // --- Validate Phone OTP ---
             if (phoneOtp.length !== 6 || !/^\d{6}$/.test(phoneOtp)) {
                 toastr.error('Please enter a valid 6-digit phone OTP', '', {
                     showMethod: "slideDown",
@@ -136,11 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Show loading state
+            // --- Show loading spinner on button ---
             $('#verifyBtn').prop('disabled', true);
             $('#verifyBtn').html('<span class="spinner-border spinner-border-sm"></span> Verifying...');
 
-            // AJAX call to verify both OTPs
+            // --- AJAX call to verify OTPs ---
             $.ajax({
                 type: "POST",
                 url: $(this).attr('action'),
@@ -153,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 success: function(data) {
                     if (data.success) {
-                        // Show success message
+                        // --- Success: Show message and redirect ---
                         toastr.success(data.message || 'Verification successful!', '', {
                             showMethod: "slideDown",
                             hideMethod: "slideUp",
@@ -166,16 +171,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             window.location.href = '/success';
                         }, 1500);
                     } else {
-                        // Reset button
+                        // --- Failure: Reset button, clear inputs, show error ---
                         $('#verifyBtn').prop('disabled', false);
                         $('#verifyBtn').text('Verify & Continue');
 
-                        // Clear OTP inputs
+                        // Clear OTP inputs and focus email OTP
                         $('#email_otp').val('');
                         $('#phone_otp').val('');
                         $('#email_otp').focus();
 
-                        // Show error with specific message
                         toastr.error(data.message || 'Invalid OTP. Please try again.', '', {
                             showMethod: "slideDown",
                             hideMethod: "slideUp",
@@ -185,11 +189,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 error: function(xhr) {
-                    // Reset button
+                    // --- AJAX error: Reset button and show error ---
                     $('#verifyBtn').prop('disabled', false);
                     $('#verifyBtn').text('Verify & Continue');
 
-                    // Show error
                     toastr.error('An error occurred. Please try again.', '', {
                         showMethod: "slideDown",
                         hideMethod: "slideUp",
@@ -201,16 +204,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Optional: OTP expiry timer (10 minutes = 600 seconds)
+    // --- OTP Expiry Timer (10 minutes = 600 seconds) ---
     let timeLeft = 600;
     const timerDisplay = document.getElementById('timer');
 
     const countdown = setInterval(function() {
+        // Format timer as MM:SS
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
-
         timerDisplay.textContent = `Codes expire in ${minutes}:${seconds.toString().padStart(2, '0')}`;
 
+        // When timer expires, show message and disable button
         if (timeLeft <= 0) {
             clearInterval(countdown);
             timerDisplay.textContent = 'Codes expired. Please request new ones.';
@@ -218,7 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
             timerDisplay.classList.add('text-danger');
             verifyBtn.disabled = true;
         }
-
         timeLeft--;
     }, 1000);
 });
